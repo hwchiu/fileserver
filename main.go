@@ -8,6 +8,7 @@ import (
 	"log"
 	"mime"
 	"net/http"
+	"os"
 	"path"
 )
 
@@ -18,9 +19,42 @@ type FileContent struct {
 	Content []byte `json:"content"`
 }
 
+func DeleteFileHandler(w http.ResponseWriter, r *http.Request) {
+	values := mux.Vars(r)
+	p := "/" + values["path"]
+
+	if err := os.RemoveAll(p); err != nil {
+		log.Println(err)
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+}
+func WriteFileHandler(w http.ResponseWriter, r *http.Request) {
+	values := mux.Vars(r)
+	p := "/" + values["path"]
+
+	var fc FileContent
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&fc); err != nil {
+		log.Println(err)
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+	defer r.Body.Close()
+
+	filePath := p + "/" + fc.Name
+	if err := ioutil.WriteFile(filePath, fc.Content, 0644); err != nil {
+		log.Println(err)
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+}
+
 func ReadFileHandler(w http.ResponseWriter, r *http.Request) {
 	values := mux.Vars(r)
-
 	p := "/" + values["path"]
 
 	bytes, err := ioutil.ReadFile(p)
@@ -67,6 +101,8 @@ func main() {
 
 	router.HandleFunc("/scan/{path:.*}", LoadDirHandler).Methods("GET")
 	router.HandleFunc("/read/{path:.*}", ReadFileHandler).Methods("GET")
+	router.HandleFunc("/upload/{path:.*}", WriteFileHandler).Methods("POST")
+	router.HandleFunc("/delete/{path:.*}", DeleteFileHandler).Methods("DELETE")
 
 	http.ListenAndServe(":33333", router)
 }
