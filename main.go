@@ -21,13 +21,18 @@ type FileContent struct {
 	Content []byte `json:"content"`
 }
 
+func writeError(w *http.ResponseWriter, err error, code int) {
+	(*w).WriteHeader(code)
+	(*w).Write([]byte(err.Error()))
+}
+
 func DeleteFileHandler(w http.ResponseWriter, r *http.Request) {
 	values := mux.Vars(r)
 	p := root + values["path"]
 
 	if err := os.RemoveAll(p); err != nil {
 		log.Println(err)
-		w.WriteHeader(http.StatusNotFound)
+		writeError(&w, err, http.StatusInternalServerError)
 		return
 	}
 
@@ -41,7 +46,7 @@ func WriteFileHandler(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&fc); err != nil {
 		log.Println(err)
-		w.WriteHeader(http.StatusNotFound)
+		writeError(&w, err, http.StatusInternalServerError)
 		return
 	}
 	defer r.Body.Close()
@@ -49,7 +54,7 @@ func WriteFileHandler(w http.ResponseWriter, r *http.Request) {
 	filePath := p + "/" + fc.Name
 	if err := ioutil.WriteFile(filePath, fc.Content, 0644); err != nil {
 		log.Println(err)
-		w.WriteHeader(http.StatusNotFound)
+		writeError(&w, err, http.StatusInternalServerError)
 		return
 	}
 	w.WriteHeader(http.StatusOK)
@@ -62,7 +67,7 @@ func ReadFileHandler(w http.ResponseWriter, r *http.Request) {
 	bytes, err := ioutil.ReadFile(p)
 	if err != nil {
 		log.Println(err)
-		w.WriteHeader(http.StatusNotFound)
+		writeError(&w, err, http.StatusNotFound)
 		return
 	}
 
@@ -84,14 +89,14 @@ func LoadDirHandler(w http.ResponseWriter, r *http.Request) {
 	infos, err := fileutils.ScanDir(p)
 	if err != nil {
 		log.Println(err)
-		w.WriteHeader(http.StatusNotFound)
+		writeError(&w, err, http.StatusNotFound)
 		return
 	}
 
 	response, err := json.Marshal(infos)
 	if err != nil {
 		log.Println(err)
-		w.WriteHeader(http.StatusNotFound)
+		writeError(&w, err, http.StatusInternalServerError)
 		return
 	}
 	w.WriteHeader(http.StatusOK)
