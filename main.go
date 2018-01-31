@@ -12,6 +12,8 @@ import (
 	"path"
 )
 
+const root = "/"
+
 type FileContent struct {
 	Name    string `json:"name"`
 	Ext     string `json:"ext"`
@@ -21,7 +23,7 @@ type FileContent struct {
 
 func DeleteFileHandler(w http.ResponseWriter, r *http.Request) {
 	values := mux.Vars(r)
-	p := "/" + values["path"]
+	p := root + values["path"]
 
 	if err := os.RemoveAll(p); err != nil {
 		log.Println(err)
@@ -55,7 +57,7 @@ func WriteFileHandler(w http.ResponseWriter, r *http.Request) {
 
 func ReadFileHandler(w http.ResponseWriter, r *http.Request) {
 	values := mux.Vars(r)
-	p := "/" + values["path"]
+	p := root + values["path"]
 
 	bytes, err := ioutil.ReadFile(p)
 	if err != nil {
@@ -77,8 +79,9 @@ func ReadFileHandler(w http.ResponseWriter, r *http.Request) {
 
 func LoadDirHandler(w http.ResponseWriter, r *http.Request) {
 	values := mux.Vars(r)
+	p := root + values["path"]
 
-	infos, err := fileutils.ScanDir("/" + values["path"])
+	infos, err := fileutils.ScanDir(p)
 	if err != nil {
 		log.Println(err)
 		w.WriteHeader(http.StatusNotFound)
@@ -96,13 +99,17 @@ func LoadDirHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(response)
 }
 
-func main() {
+func newRouterServer() http.Handler {
 	router := mux.NewRouter()
 
 	router.HandleFunc("/scan/{path:.*}", LoadDirHandler).Methods("GET")
 	router.HandleFunc("/read/{path:.*}", ReadFileHandler).Methods("GET")
 	router.HandleFunc("/upload/{path:.*}", WriteFileHandler).Methods("POST")
 	router.HandleFunc("/delete/{path:.*}", DeleteFileHandler).Methods("DELETE")
+	return router
+}
 
+func main() {
+	router := newRouterServer()
 	http.ListenAndServe(":33333", router)
 }
