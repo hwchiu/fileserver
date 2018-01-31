@@ -12,6 +12,8 @@ import (
 	"testing"
 )
 
+const invalidDir = "/123456789/9876554321/123456789"
+
 func createTempDir(t *testing.T, prefix string) string {
 	dir, err := ioutil.TempDir(".", prefix)
 	assert.NoError(t, err)
@@ -28,7 +30,7 @@ func createTempFile(t *testing.T, dir, name string, contents []byte) {
 }
 
 func TestLoadDir(t *testing.T) {
-	dirPrefix := "testdir"
+	dirPrefix := "loadDir"
 	//Create a file under testdir
 	tmpDir := createTempDir(t, dirPrefix)
 	createTempFile(t, tmpDir, "test", []byte{})
@@ -61,7 +63,56 @@ func TestLoadDir(t *testing.T) {
 }
 
 func TestInvalidLoadDir(t *testing.T) {
-	req, err := http.NewRequest("GET", "/scan/987654321/12345667890/1234", nil)
+	req, err := http.NewRequest("GET", "/scan"+invalidDir, nil)
+	assert.NoError(t, err)
+
+	res := httptest.NewRecorder()
+	newRouterServer().ServeHTTP(res, req)
+
+	//Test Status Code
+	assert.Equal(t, res.Code, 404)
+}
+
+func TestReadFile(t *testing.T) {
+	dirPrefix := "readDir"
+	testFileExt := ".txt"
+	testFileName := "readMe"
+	testFileContents := []byte{12, 3, 4, 1, 213, 213, 13}
+	testFile := testFileName + testFileExt
+
+	//Create a file under testdir
+	tmpDir := createTempDir(t, dirPrefix)
+	createTempFile(t, tmpDir, testFile, testFileContents)
+
+	pwd, err := os.Getwd()
+	assert.NoError(t, err)
+	//Get the abosolute path for testing dir
+	filePath := pwd + "/" + tmpDir + "/" + testFile
+
+	req, err := http.NewRequest("GET", "/read"+filePath, nil)
+	assert.NoError(t, err)
+
+	res := httptest.NewRecorder()
+	newRouterServer().ServeHTTP(res, req)
+
+	//Test Status Code
+	assert.Equal(t, res.Code, 200)
+
+	//Test Files
+	var fc FileContent
+	err = json.Unmarshal(res.Body.Bytes(), &fc)
+	assert.NoError(t, err)
+
+	assert.Equal(t, fc.Name, testFile)
+	assert.Equal(t, fc.Ext, testFileExt)
+	assert.Equal(t, fc.Type, "text/plain; charset=utf-8")
+	assert.Equal(t, fc.Content, testFileContents)
+
+	os.RemoveAll(tmpDir)
+}
+
+func TestInvalidReadfile(t *testing.T) {
+	req, err := http.NewRequest("GET", "/read"+invalidDir+"/a", nil)
 	assert.NoError(t, err)
 
 	res := httptest.NewRecorder()
