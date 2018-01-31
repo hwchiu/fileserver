@@ -1,25 +1,76 @@
 package main
 
 import (
+	"encoding/json"
 	"github.com/gorilla/mux"
+	"io/ioutil"
 	"log"
+	"mime"
 	"net/http"
+	"path"
+	"time"
 )
 
-type FileOperation struct {
-	Path     string `json:"path"`
-	FileName string `json:"fileName"`
+type FileInfo struct {
+	Name    string    `json:"name"`
+	Size    int64     `json:"size"`
+	Type    string    `json:"type"`
+	ModTime time.Time `json:"mtime"`
+	IsDir   bool      `json:"isDir"`
 }
 
-func ListFiles(w http.ResponseWriter, r *http.Request) {
-	path := mux.Vars(r)
-	log.Println(path)
+type FileContent struct {
+	Name    string `json:"name"`
+	Ext     string `json:"ext"`
+	Type    string `json:"type"`
+	Content []byte `json:"content"`
+}
+
+func ScanDir(p string) ([]FileInfo, error) {
+	fileInfos := []FileInfo{}
+	files, err := ioutil.ReadDir(p)
+	if err != nil {
+		return fileInfos, err
+	}
+
+	for _, file := range files {
+		fileInfos = append(fileInfos, FileInfo{
+			Name:    file.Name(),
+			Size:    file.Size(),
+			ModTime: file.ModTime(),
+			IsDir:   file.IsDir(),
+			Type:    mime.TypeByExtension(path.Ext(file.Name())),
+		})
+	}
+
+	return fileInfos, nil
+}
+
+func LoadDirHandler(w http.ResponseWriter, r *http.Request) {
+	values := mux.Vars(r)
+
+	infos, err := ScanDir("/" + values["path"])
+	if err != nil {
+		log.Println(err)
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	response, err := json.Marshal(infos)
+	if err != nil {
+		log.Println(err)
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(response)
 }
 
 func main() {
 	router := mux.NewRouter()
 
-	router.HandleFunc("/list/{path:.*}", ListFiles).Methods("GET")
+	router.HandleFunc("/scan/{path:.*}", LoadDirHandler).Methods("GET")
 
 	http.ListenAndServe(":33333", router)
 }
