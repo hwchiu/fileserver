@@ -3,10 +3,12 @@ package main
 import (
 	"bitbucket.org/linkernetworks/aurora/src/utils/fileutils"
 	"encoding/json"
+	"flag"
 	"github.com/gorilla/mux"
 	"io/ioutil"
 	"log"
 	"mime"
+	"net"
 	"net/http"
 	"os"
 	"path"
@@ -27,9 +29,11 @@ func writeError(w http.ResponseWriter, err error, code int) {
 }
 
 func DeleteFileHandler(w http.ResponseWriter, r *http.Request) {
+	log.Println("Ready to delete the file")
 	values := mux.Vars(r)
 	p := root + values["path"]
 
+	log.Println("target path is ", p)
 	if err := os.RemoveAll(p); err != nil {
 		log.Println(err)
 		writeError(w, err, http.StatusInternalServerError)
@@ -37,11 +41,14 @@ func DeleteFileHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
+	log.Println("Delete file success")
 }
 func WriteFileHandler(w http.ResponseWriter, r *http.Request) {
+	log.Println("Ready to upload the file")
 	values := mux.Vars(r)
 	p := "/" + values["path"]
 
+	log.Println("target path is ", p)
 	var fc FileContent
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&fc); err != nil {
@@ -58,12 +65,15 @@ func WriteFileHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusOK)
+	log.Println("Upload file success")
 }
 
 func ReadFileHandler(w http.ResponseWriter, r *http.Request) {
+	log.Println("Ready to read the file")
 	values := mux.Vars(r)
 	p := root + values["path"]
 
+	log.Println("target path is ", p)
 	bytes, err := ioutil.ReadFile(p)
 	if err != nil {
 		log.Println(err)
@@ -80,12 +90,15 @@ func ReadFileHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Header().Set("Content-Type", "text/plain")
 	w.Write(response)
+	log.Println("Read file success")
 }
 
 func LoadDirHandler(w http.ResponseWriter, r *http.Request) {
+	log.Println("Ready to load the dir")
 	values := mux.Vars(r)
 	p := root + values["path"]
 
+	log.Println("target path is ", p)
 	infos, err := fileutils.ScanDir(p)
 	if err != nil {
 		log.Println(err)
@@ -102,6 +115,7 @@ func LoadDirHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(response)
+	log.Println("Load dir success")
 }
 
 func newRouterServer() http.Handler {
@@ -115,6 +129,15 @@ func newRouterServer() http.Handler {
 }
 
 func main() {
+	var host string
+	var port string
+
+	flag.StringVar(&host, "h", "", "hostname")
+	flag.StringVar(&port, "p", "33333", "port")
+	flag.Parse()
+
+	bind := net.JoinHostPort(host, port)
+
 	router := newRouterServer()
-	http.ListenAndServe(":33333", router)
+	http.ListenAndServe(bind, router)
 }
