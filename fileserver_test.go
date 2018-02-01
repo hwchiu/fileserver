@@ -29,7 +29,7 @@ func createTempFile(t *testing.T, dir, name string, contents []byte) {
 	f.Close()
 }
 
-func TestLoadDir(t *testing.T) {
+func TestScanDir(t *testing.T) {
 	dirPrefix := "loadDir"
 	//Create a file under testdir
 	tmpDir := createTempDir(t, dirPrefix)
