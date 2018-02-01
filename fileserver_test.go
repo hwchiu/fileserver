@@ -179,3 +179,36 @@ func TestUploadFile(t *testing.T) {
 
 	os.RemoveAll(tmpDir)
 }
+
+func TestDeleteFile(t *testing.T) {
+	dirPrefix := "deleteDir"
+	testFile := "ignoreme"
+	//Create a file under testdir
+	tmpDir := createTempDir(t, dirPrefix)
+	createTempFile(t, tmpDir, testFile, []byte{})
+
+	pwd, err := os.Getwd()
+	assert.NoError(t, err)
+	//Get the abosolute path for testing dir
+	filePath := pwd + "/" + tmpDir + "/" + testFile
+
+	req, err := http.NewRequest("DELETE", "/delete"+filePath, nil)
+	assert.NoError(t, err)
+
+	res := httptest.NewRecorder()
+	newRouterServer().ServeHTTP(res, req)
+
+	//Test Status Code
+	assert.Equal(t, res.Code, 200)
+
+	//Readfile again, check the file content
+	req, err = http.NewRequest("GET", "/read"+filePath, nil)
+	assert.NoError(t, err)
+
+	res = httptest.NewRecorder()
+	newRouterServer().ServeHTTP(res, req)
+
+	//Test Status Code
+	assert.Equal(t, res.Code, 404)
+
+}
