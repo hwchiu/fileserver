@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"github.com/stretchr/testify/assert"
 	"io/ioutil"
-	_ "log"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -63,17 +62,6 @@ func TestLoadDir(t *testing.T) {
 	os.RemoveAll(tmpDir)
 }
 
-func TestInvalidLoadDir(t *testing.T) {
-	req, err := http.NewRequest("GET", "/scan"+invalidDir, nil)
-	assert.NoError(t, err)
-
-	res := httptest.NewRecorder()
-	newRouterServer().ServeHTTP(res, req)
-
-	//Test Status Code
-	assert.Equal(t, res.Code, 404)
-}
-
 func TestReadFile(t *testing.T) {
 	dirPrefix := "readDir"
 	testFileExt := ".txt"
@@ -110,17 +98,6 @@ func TestReadFile(t *testing.T) {
 	assert.Equal(t, fc.Content, testFileContents)
 
 	os.RemoveAll(tmpDir)
-}
-
-func TestInvalidReadFile(t *testing.T) {
-	req, err := http.NewRequest("GET", "/read"+invalidDir+"/a", nil)
-	assert.NoError(t, err)
-
-	res := httptest.NewRecorder()
-	newRouterServer().ServeHTTP(res, req)
-
-	//Test Status Code
-	assert.Equal(t, res.Code, 404)
 }
 
 func TestUploadFile(t *testing.T) {
@@ -210,5 +187,31 @@ func TestDeleteFile(t *testing.T) {
 
 	//Test Status Code
 	assert.Equal(t, res.Code, 404)
+	os.RemoveAll(tmpDir)
+}
 
+func TestInvalidPath(t *testing.T) {
+	type testCases struct {
+		Cases  string
+		URL    string
+		Method string
+	}
+
+	data := []testCases{
+		{"Load", "/scan", "GET"},
+		{"Read", "/read", "GET"},
+	}
+
+	for _, v := range data {
+		t.Run(v.Cases, func(t *testing.T) {
+			req, err := http.NewRequest(v.Method, v.URL+invalidDir, nil)
+			assert.NoError(t, err)
+
+			res := httptest.NewRecorder()
+			newRouterServer().ServeHTTP(res, req)
+
+			//Test Status Code
+			assert.Equal(t, res.Code, 404)
+		})
+	}
 }
