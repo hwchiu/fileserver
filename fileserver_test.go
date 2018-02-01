@@ -124,7 +124,7 @@ func TestUploadFile(t *testing.T) {
 
 	body, err := json.Marshal(testFC)
 	assert.NoError(t, err)
-	req, err := http.NewRequest("POST", "/upload"+filePath, bytes.NewReader(body))
+	req, err := http.NewRequest("POST", "/write"+filePath, bytes.NewReader(body))
 	assert.NoError(t, err)
 	req.Header.Set("Content-Type", "application/json")
 

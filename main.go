@@ -28,7 +28,7 @@ func writeError(w http.ResponseWriter, err error, code int) {
 	w.Write([]byte(err.Error()))
 }
 
-func DeleteFileHandler(w http.ResponseWriter, r *http.Request) {
+func RemoveFileHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println("Ready to delete the file")
 	values := mux.Vars(r)
 	p := root + values["path"]
@@ -93,7 +93,7 @@ func ReadFileHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println("Read file success")
 }
 
-func LoadDirHandler(w http.ResponseWriter, r *http.Request) {
+func ScanDirHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println("Ready to load the dir")
 	values := mux.Vars(r)
 	p := root + values["path"]
@@ -121,10 +121,10 @@ func LoadDirHandler(w http.ResponseWriter, r *http.Request) {
 func newRouterServer() http.Handler {
 	router := mux.NewRouter()
 
-	router.HandleFunc("/scan/{path:.*}", LoadDirHandler).Methods("GET")
+	router.HandleFunc("/scan/{path:.*}", ScanDirHandler).Methods("GET")
 	router.HandleFunc("/read/{path:.*}", ReadFileHandler).Methods("GET")
-	router.HandleFunc("/upload/{path:.*}", WriteFileHandler).Methods("POST")
-	router.HandleFunc("/delete/{path:.*}", DeleteFileHandler).Methods("DELETE")
+	router.HandleFunc("/write/{path:.*}", WriteFileHandler).Methods("POST")
+	router.HandleFunc("/delete/{path:.*}", RemoveFileHandler).Methods("DELETE")
 	return router
 }
 
