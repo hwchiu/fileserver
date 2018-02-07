@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bitbucket.org/linkernetworks/aurora/src/aurora"
 	fs "bitbucket.org/linkernetworks/aurora/src/fileserver"
 	"flag"
 	"github.com/gorilla/mux"
@@ -21,10 +22,18 @@ func newRouterServer() http.Handler {
 func main() {
 	var host string
 	var port string
+	var version bool = false
 
+	flag.BoolVar(&version, "version", false, "version")
 	flag.StringVar(&host, "h", "", "hostname")
 	flag.StringVar(&port, "p", "33333", "port")
 	flag.Parse()
+
+	if version {
+		aurora.ShowVersion()
+		aurora.ShowSubmoduleVersion()
+		return
+	}
 
 	bind := net.JoinHostPort(host, port)
 
