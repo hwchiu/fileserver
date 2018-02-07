@@ -31,7 +31,6 @@ func main() {
 
 	if version {
 		aurora.ShowVersion()
-		aurora.ShowSubmoduleVersion()
 		return
 	}
 
