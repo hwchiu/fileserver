@@ -85,8 +85,8 @@ func ReadFileHandler(w http.ResponseWriter, r *http.Request) {
 		Type:    mime.TypeByExtension(path.Ext(p)),
 		Content: bytes,
 	})
+	w.Header().Set("Content-Type", "text/json")
 	w.WriteHeader(http.StatusOK)
-	w.Header().Set("Content-Type", "text/plain")
 	w.Write(response)
 	log.Println("Read file success")
 }
@@ -110,8 +110,8 @@ func ScanDirHandler(w http.ResponseWriter, r *http.Request) {
 		writeError(w, err, http.StatusInternalServerError)
 		return
 	}
-	w.WriteHeader(http.StatusOK)
 	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
 	w.Write(response)
 	log.Println("Load dir success")
 }
