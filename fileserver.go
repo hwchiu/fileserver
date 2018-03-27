@@ -12,7 +12,7 @@ import (
 	"path"
 )
 
-const root = "/"
+const root = "/workspace"
 
 type FileContent struct {
 	Name    string `json:"name"`
@@ -29,7 +29,7 @@ func writeError(w http.ResponseWriter, err error, code int) {
 func RemoveFileHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println("Ready to delete the file")
 	values := mux.Vars(r)
-	p := root + values["path"]
+	p := path.Join(root, values["path"])
 
 	log.Println("target path is ", p)
 	if err := os.RemoveAll(p); err != nil {
@@ -44,7 +44,8 @@ func RemoveFileHandler(w http.ResponseWriter, r *http.Request) {
 func WriteFileHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println("Ready to upload the file")
 	values := mux.Vars(r)
-	p := "/" + values["path"]
+
+	p := path.Join(root, values["path"])
 
 	log.Println("target path is ", p)
 	var fc FileContent
@@ -69,7 +70,7 @@ func WriteFileHandler(w http.ResponseWriter, r *http.Request) {
 func ReadFileHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println("Ready to read the file")
 	values := mux.Vars(r)
-	p := root + values["path"]
+	p := path.Join(root, values["path"])
 
 	log.Println("target path is ", p)
 	bytes, err := ioutil.ReadFile(p)
@@ -94,7 +95,10 @@ func ReadFileHandler(w http.ResponseWriter, r *http.Request) {
 func ScanDirHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println("Ready to load the dir")
 	values := mux.Vars(r)
-	p := root + values["path"]
+	p := root
+	if subPath, ok := values["path"]; ok {
+		p = path.Join(root, subPath)
+	}
 
 	log.Println("target path is ", p)
 	infos, err := fileutils.ScanDir(p)
