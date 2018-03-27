@@ -26,7 +26,30 @@ func writeError(w http.ResponseWriter, err error, code int) {
 	w.Write([]byte(err.Error()))
 }
 
-func RemoveFileHandler(w http.ResponseWriter, r *http.Request) {
+func GetRemoveFileHandler(root string) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		RemoveFileHandler(root, w, r)
+	}
+}
+
+func GetWriteFileHandler(root string) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		WriteFileHandler(root, w, r)
+	}
+}
+
+func GetReadFileHandler(root string) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		ReadFileHandler(root, w, r)
+	}
+}
+
+func GetScanDirHandler(root string) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		ScanDirHandler(root, w, r)
+	}
+}
+func RemoveFileHandler(root string, w http.ResponseWriter, r *http.Request) {
 	log.Println("Ready to delete the file")
 	values := mux.Vars(r)
 	p := path.Join(root, values["path"])
@@ -41,7 +64,7 @@ func RemoveFileHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	log.Println("Delete file success")
 }
-func WriteFileHandler(w http.ResponseWriter, r *http.Request) {
+func WriteFileHandler(root string, w http.ResponseWriter, r *http.Request) {
 	log.Println("Ready to upload the file")
 	values := mux.Vars(r)
 
@@ -67,7 +90,7 @@ func WriteFileHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println("Upload file success")
 }
 
-func ReadFileHandler(w http.ResponseWriter, r *http.Request) {
+func ReadFileHandler(root string, w http.ResponseWriter, r *http.Request) {
 	log.Println("Ready to read the file")
 	values := mux.Vars(r)
 	p := path.Join(root, values["path"])
@@ -92,7 +115,7 @@ func ReadFileHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println("Read file success")
 }
 
-func ScanDirHandler(w http.ResponseWriter, r *http.Request) {
+func ScanDirHandler(root string, w http.ResponseWriter, r *http.Request) {
 	log.Println("Ready to load the dir")
 	values := mux.Vars(r)
 	p := root

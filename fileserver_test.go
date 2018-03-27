@@ -18,10 +18,13 @@ const invalidDir = "/invalidpath/ignore/me"
 func newRouterServer() http.Handler {
 	router := mux.NewRouter()
 
-	router.HandleFunc("/scan/{path:.*}", ScanDirHandler).Methods("GET")
-	router.HandleFunc("/read/{path:.*}", ReadFileHandler).Methods("GET")
-	router.HandleFunc("/write/{path:.*}", WriteFileHandler).Methods("POST")
-	router.HandleFunc("/delete/{path:.*}", RemoveFileHandler).Methods("DELETE")
+	root := "/"
+	router.HandleFunc("/scan/{path:.*}", GetScanDirHandler(root)).Methods("GET")
+	router.HandleFunc("/scan", GetScanDirHandler(root)).Methods("GET")
+	router.HandleFunc("/read/{path:.*}", GetReadFileHandler(root)).Methods("GET")
+	router.HandleFunc("/write/{path:.*}", GetWriteFileHandler(root)).Methods("POST")
+	router.HandleFunc("/delete/{path:.*}", GetRemoveFileHandler(root)).Methods("DELETE")
+
 	return router
 }
 
