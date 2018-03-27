@@ -13,6 +13,7 @@ func newRouterServer() http.Handler {
 	router := mux.NewRouter()
 
 	router.HandleFunc("/scan/{path:.*}", fs.ScanDirHandler).Methods("GET")
+	router.HandleFunc("/scan", fs.ScanDirHandler).Methods("GET")
 	router.HandleFunc("/read/{path:.*}", fs.ReadFileHandler).Methods("GET")
 	router.HandleFunc("/write/{path:.*}", fs.WriteFileHandler).Methods("POST")
 	router.HandleFunc("/delete/{path:.*}", fs.RemoveFileHandler).Methods("DELETE")
