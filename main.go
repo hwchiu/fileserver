@@ -1,6 +1,12 @@
 package main
 
 import (
+<<<<<<< HEAD
+=======
+	"bitbucket.org/linkernetworks/aurora/src/aurora"
+	"bitbucket.org/linkernetworks/aurora/src/entity"
+	fs "bitbucket.org/linkernetworks/aurora/src/fileserver"
+>>>>>>> workspace is fileserver default route
 	"flag"
 	"net"
 	"net/http"
