@@ -6,7 +6,6 @@ import (
 	"net/http"
 
 	"bitbucket.org/linkernetworks/aurora/src/aurora"
-	"bitbucket.org/linkernetworks/aurora/src/entity"
 	fs "bitbucket.org/linkernetworks/aurora/src/fileserver"
 	"bitbucket.org/linkernetworks/aurora/src/logger"
 
