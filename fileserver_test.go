@@ -47,7 +47,10 @@ func TestScanDir(t *testing.T) {
 	dirPrefix := "loadDir"
 	//Create a file under testdir
 	tmpDir := createTempDir(t, dirPrefix)
-	createTempFile(t, tmpDir, "test", []byte{})
+	targetfile := []string{".hidden_one", ".hidden_two", "i_am_not_hidden"}
+	for _, v := range targetfile {
+		createTempFile(t, tmpDir, v, []byte{})
+	}
 
 	pwd, err := os.Getwd()
 	assert.NoError(t, err)
@@ -68,10 +71,50 @@ func TestScanDir(t *testing.T) {
 	err = json.Unmarshal(res.Body.Bytes(), &fi)
 	assert.NoError(t, err)
 
-	assert.Equal(t, fi[0].Name, "test")
+	assert.Equal(t, 1, len(fi))
+	assert.Equal(t, fi[0].Name, "i_am_not_hidden")
 	assert.Equal(t, fi[0].Size, int64(0))
 	assert.Equal(t, fi[0].Type, "")
 	assert.Equal(t, fi[0].IsDir, false)
+
+	os.RemoveAll(tmpDir)
+}
+
+func TestScanDirWithHidden(t *testing.T) {
+	dirPrefix := "loadDir"
+	//Create a file under testdir
+	tmpDir := createTempDir(t, dirPrefix)
+	targetfile := []string{".hidden_one", ".hidden_two", "i_am_not_hidden"}
+	for _, v := range targetfile {
+		createTempFile(t, tmpDir, v, []byte{})
+	}
+
+	pwd, err := os.Getwd()
+	assert.NoError(t, err)
+	//Get the abosolute path for testing dir
+	dir := pwd + "/" + tmpDir
+
+	req, err := http.NewRequest("GET", "/scan"+dir+"/?hidden=1", nil)
+	assert.NoError(t, err)
+
+	res := httptest.NewRecorder()
+	newRouterServer().ServeHTTP(res, req)
+
+	//Test Status Code
+	assert.Equal(t, res.Code, 200)
+
+	//Test Files
+	var fi []fileutils.FileInfo
+	err = json.Unmarshal(res.Body.Bytes(), &fi)
+	assert.NoError(t, err)
+	assert.Equal(t, 3, len(fi))
+
+	for i, _ := range targetfile {
+		assert.Equal(t, fi[i].Name, targetfile[i])
+		assert.Equal(t, fi[i].Size, int64(0))
+		assert.Equal(t, fi[i].Type, "")
+		assert.Equal(t, fi[i].IsDir, false)
+	}
 
 	os.RemoveAll(tmpDir)
 }
