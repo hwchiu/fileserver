@@ -2,6 +2,7 @@ package fileserver
 
 import (
 	"bitbucket.org/linkernetworks/aurora/src/logger"
+	"bitbucket.org/linkernetworks/aurora/src/query"
 	"bitbucket.org/linkernetworks/aurora/src/utils/fileutils"
 
 	"encoding/json"
@@ -114,12 +115,13 @@ func ScanDirHandler(root string, w http.ResponseWriter, r *http.Request) {
 		p = path.Join(root, subPath)
 	}
 
-	withHidden := r.URL.Query().Get("hidden")
-
-	var excludePrefix string
-	if withHidden != "1" {
-		//The default behavior is ignore the hidden files
-		excludePrefix = "."
+	//default behavior is ignore the hidden files
+	excludePrefix := "."
+	query := query.New(r.URL.Query())
+	if value, ok := query.Str("hidden"); ok {
+		if value == "1" {
+			excludePrefix = ""
+		}
 	}
 
 	infos, err := fileutils.ScanDir(p, excludePrefix)
