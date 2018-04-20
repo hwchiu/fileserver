@@ -47,6 +47,7 @@ func TestScanDir(t *testing.T) {
 	dirPrefix := "loadDir"
 	//Create a file under testdir
 	tmpDir := createTempDir(t, dirPrefix)
+	defer os.RemoveAll(tmpDir)
 	targetfile := []string{".hidden_one", ".hidden_two", "i_am_not_hidden"}
 	for _, v := range targetfile {
 		createTempFile(t, tmpDir, v, []byte{})
@@ -76,14 +77,13 @@ func TestScanDir(t *testing.T) {
 	assert.Equal(t, fi[0].Size, int64(0))
 	assert.Equal(t, fi[0].Type, "")
 	assert.Equal(t, fi[0].IsDir, false)
-
-	os.RemoveAll(tmpDir)
 }
 
 func TestScanDirWithHidden(t *testing.T) {
 	dirPrefix := "loadDir"
 	//Create a file under testdir
 	tmpDir := createTempDir(t, dirPrefix)
+	defer os.RemoveAll(tmpDir)
 	targetfile := []string{".hidden_one", ".hidden_two", "i_am_not_hidden"}
 	for _, v := range targetfile {
 		createTempFile(t, tmpDir, v, []byte{})
@@ -115,8 +115,6 @@ func TestScanDirWithHidden(t *testing.T) {
 		assert.Equal(t, fi[i].Type, "")
 		assert.Equal(t, fi[i].IsDir, false)
 	}
-
-	os.RemoveAll(tmpDir)
 }
 
 func TestReadFile(t *testing.T) {
@@ -128,6 +126,7 @@ func TestReadFile(t *testing.T) {
 
 	//Create a file under testdir
 	tmpDir := createTempDir(t, dirPrefix)
+	defer os.RemoveAll(tmpDir)
 	createTempFile(t, tmpDir, testFile, testFileContents)
 
 	pwd, err := os.Getwd()
@@ -153,8 +152,6 @@ func TestReadFile(t *testing.T) {
 	assert.Equal(t, fc.Ext, testFileExt)
 	assert.Equal(t, fc.Type, "text/plain; charset=utf-8")
 	assert.Equal(t, fc.Content, testFileContents)
-
-	os.RemoveAll(tmpDir)
 }
 
 func TestUploadFile(t *testing.T) {
@@ -172,6 +169,7 @@ func TestUploadFile(t *testing.T) {
 
 	//Create a file under testdir
 	tmpDir := createTempDir(t, dirPrefix)
+	defer os.RemoveAll(tmpDir)
 	createTempFile(t, tmpDir, testFile, testFileContents)
 
 	pwd, err := os.Getwd()
@@ -210,8 +208,6 @@ func TestUploadFile(t *testing.T) {
 	assert.Equal(t, fc.Ext, testFileExt)
 	assert.Equal(t, fc.Type, "text/plain; charset=utf-8")
 	assert.Equal(t, fc.Content, testFileContents)
-
-	os.RemoveAll(tmpDir)
 }
 
 func TestDeleteFile(t *testing.T) {
@@ -219,6 +215,7 @@ func TestDeleteFile(t *testing.T) {
 	testFile := "ignoreme"
 	//Create a file under testdir
 	tmpDir := createTempDir(t, dirPrefix)
+	defer os.RemoveAll(tmpDir)
 	createTempFile(t, tmpDir, testFile, []byte{})
 
 	pwd, err := os.Getwd()
@@ -244,7 +241,6 @@ func TestDeleteFile(t *testing.T) {
 
 	//Test Status Code
 	assert.Equal(t, res.Code, 404)
-	os.RemoveAll(tmpDir)
 }
 
 func TestInvalidPath(t *testing.T) {
