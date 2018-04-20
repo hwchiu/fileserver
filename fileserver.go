@@ -114,7 +114,20 @@ func ScanDirHandler(root string, w http.ResponseWriter, r *http.Request) {
 		p = path.Join(root, subPath)
 	}
 
-	infos, err := fileutils.ScanDir(p)
+	filterHidden := true
+	v := r.URL.Query()
+	if val, ok := v["hidden"]; ok {
+		if val[0] == "1" {
+			filterHidden = false
+		}
+	}
+
+	var excludePrefix string
+	if filterHidden {
+		excludePrefix = "."
+	}
+
+	infos, err := fileutils.ScanDir(p, excludePrefix)
 	if err != nil {
 		logger.Errorf("scan dir error: %v", err)
 		writeError(w, err, http.StatusNotFound)
