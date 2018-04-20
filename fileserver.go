@@ -116,15 +116,16 @@ func ScanDirHandler(root string, w http.ResponseWriter, r *http.Request) {
 	}
 
 	//default behavior is ignore the hidden files
-	excludePrefix := "."
+	excludePattern := []string{"^\\."}
 	query := query.New(r.URL.Query())
 	if value, ok := query.Str("hidden"); ok {
+		// 1 means we want to show the hidden files, so don't set any excludePattern here
 		if value == "1" {
-			excludePrefix = ""
+			excludePattern = []string{}
 		}
 	}
 
-	infos, err := fileutils.ScanDir(p, excludePrefix)
+	infos, err := fileutils.ScanDir(p, excludePattern)
 	if err != nil {
 		logger.Errorf("scan dir error: %v", err)
 		writeError(w, err, http.StatusNotFound)
