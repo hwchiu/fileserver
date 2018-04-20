@@ -114,16 +114,11 @@ func ScanDirHandler(root string, w http.ResponseWriter, r *http.Request) {
 		p = path.Join(root, subPath)
 	}
 
-	filterHidden := true
-	v := r.URL.Query()
-	if val, ok := v["hidden"]; ok {
-		if val[0] == "1" {
-			filterHidden = false
-		}
-	}
+	withHidden := r.URL.Query().Get("hidden")
 
 	var excludePrefix string
-	if filterHidden {
+	if withHidden != "1" {
+		//The default behavior is ignore the hidden files
 		excludePrefix = "."
 	}
 
