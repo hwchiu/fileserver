@@ -2,8 +2,8 @@ package fileserver
 
 import (
 	"bitbucket.org/linkernetworks/aurora/src/logger"
-	"bitbucket.org/linkernetworks/aurora/src/query"
 	"bitbucket.org/linkernetworks/aurora/src/utils/fileutils"
+	"bitbucket.org/linkernetworks/aurora/src/net/http/query"
 
 	"encoding/json"
 	"github.com/gorilla/mux"
