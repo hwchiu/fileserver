@@ -2,11 +2,12 @@ package fileserver
 
 import (
 	"bitbucket.org/linkernetworks/aurora/src/logger"
-	"bitbucket.org/linkernetworks/aurora/src/utils/fileutils"
 	"bitbucket.org/linkernetworks/aurora/src/net/http/query"
+	"bitbucket.org/linkernetworks/aurora/src/utils/fileutils"
 
 	"encoding/json"
 	"github.com/gorilla/mux"
+	"io"
 	"io/ioutil"
 	"mime"
 	"net/http"
@@ -68,17 +69,18 @@ func WriteFileHandler(root string, w http.ResponseWriter, r *http.Request) {
 
 	p := path.Join(root, values["path"])
 
-	var fc FileContent
-	decoder := json.NewDecoder(r.Body)
-	if err := decoder.Decode(&fc); err != nil {
-		logger.Errorf("json error: %v", err)
+	file, header, err := r.FormFile("file")
+	if err != nil {
+		logger.Errorf("Get the file information fail: %v", err)
 		writeError(w, err, http.StatusInternalServerError)
 		return
 	}
-	defer r.Body.Close()
+	defer file.Close()
 
-	filePath := p + "/" + fc.Name
-	if err := ioutil.WriteFile(filePath, fc.Content, 0644); err != nil {
+	filePath := p + "/" + header.Filename
+	fileHandler, err := os.Create(filePath)
+	defer fileHandler.Close()
+	if _, err := io.Copy(fileHandler, file); err != nil {
 		logger.Errorf("write error: %v", err)
 		writeError(w, err, http.StatusInternalServerError)
 		return
