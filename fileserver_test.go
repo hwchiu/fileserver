@@ -1,16 +1,18 @@
 package fileserver
 
 import (
-	"bitbucket.org/linkernetworks/aurora/src/utils/fileutils"
 	"bytes"
 	"encoding/json"
-	"github.com/gorilla/mux"
-	"github.com/stretchr/testify/assert"
 	"io/ioutil"
+	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"testing"
+
+	"bitbucket.org/linkernetworks/aurora/src/utils/fileutils"
+	"github.com/gorilla/mux"
+	"github.com/stretchr/testify/assert"
 )
 
 const invalidDir = "/invalidpath/ignore/me"
@@ -148,56 +150,58 @@ func TestReadFile(t *testing.T) {
 	err = json.Unmarshal(res.Body.Bytes(), &fc)
 	assert.NoError(t, err)
 
-	assert.Equal(t, fc.Name, testFile)
-	assert.Equal(t, fc.Ext, testFileExt)
-	assert.Equal(t, fc.Type, "text/plain; charset=utf-8")
-	assert.Equal(t, fc.Content, testFileContents)
+	assert.Equal(t, testFile, fc.Name)
+	assert.Equal(t, testFileContents, fc.Content)
 }
 
 func TestUploadFile(t *testing.T) {
+
+	//Generate a simple file
 	dirPrefix := "uploadDir"
-	testFileExt := ".txt"
-	testFileName := "uploadMe"
-	testFileContents := []byte{12, 3, 4, 1, 213, 213, 13}
-	testFile := testFileName + testFileExt
-
-	testFC := FileContent{
-		Name:    testFile,
-		Ext:     testFileExt,
-		Content: testFileContents,
-	}
-
+	inputFile := "uploadMe.txt"
+	testFileContents := []byte{1, 123, 123, 213, 13, 213, 3}
 	//Create a file under testdir
 	tmpDir := createTempDir(t, dirPrefix)
 	defer os.RemoveAll(tmpDir)
-	createTempFile(t, tmpDir, testFile, testFileContents)
+	createTempFile(t, tmpDir, inputFile, testFileContents)
+
+	path := tmpDir + "/" + inputFile
+	file, err := os.Open(path)
+	assert.NoError(t, err)
+	fileContents, err := ioutil.ReadAll(file)
+	assert.NoError(t, err)
+	file.Close()
+
+	//Load the file we created above and use the write API to write new file
+	testFile := "readme.txt"
+	body := new(bytes.Buffer)
+	writer := multipart.NewWriter(body)
+	part, err := writer.CreateFormFile("file", testFile)
+	assert.NoError(t, err)
+	part.Write(fileContents)
+
+	err = writer.Close()
+	assert.NoError(t, err)
 
 	pwd, err := os.Getwd()
+	filePath := pwd + "/" + testFile
+	req, err := http.NewRequest("POST", "/write"+pwd, body)
 	assert.NoError(t, err)
-	//Get the abosolute path for testing dir
-	filePath := pwd + "/" + tmpDir
-
-	body, err := json.Marshal(testFC)
-	assert.NoError(t, err)
-	req, err := http.NewRequest("POST", "/write"+filePath, bytes.NewReader(body))
-	assert.NoError(t, err)
-	req.Header.Set("Content-Type", "application/json")
+	req.Header.Add("Content-Type", writer.FormDataContentType())
 
 	res := httptest.NewRecorder()
 	newRouterServer().ServeHTTP(res, req)
+	defer os.RemoveAll(filePath)
 
-	//Test Status Code
-	assert.Equal(t, res.Code, 200)
-
-	//Readfile again, check the file content
-	req, err = http.NewRequest("GET", "/read"+filePath+"/"+testFile, nil)
+	//Read the file and check the filename and type
+	req, err = http.NewRequest("GET", "/read"+filePath, nil)
 	assert.NoError(t, err)
 
 	res = httptest.NewRecorder()
 	newRouterServer().ServeHTTP(res, req)
 
 	//Test Status Code
-	assert.Equal(t, res.Code, 200)
+	assert.Equal(t, 200, res.Code)
 
 	//Test Files
 	var fc FileContent
@@ -205,8 +209,6 @@ func TestUploadFile(t *testing.T) {
 	assert.NoError(t, err)
 
 	assert.Equal(t, fc.Name, testFile)
-	assert.Equal(t, fc.Ext, testFileExt)
-	assert.Equal(t, fc.Type, "text/plain; charset=utf-8")
 	assert.Equal(t, fc.Content, testFileContents)
 }
 
