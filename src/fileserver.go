@@ -1,9 +1,7 @@
 package fileserver
 
 import (
-	"bitbucket.org/linkernetworks/aurora/src/logger"
-	"bitbucket.org/linkernetworks/aurora/src/net/http/query"
-	"bitbucket.org/linkernetworks/aurora/src/utils/fileutils"
+	"github.com/c9s/gomon/logger"
 
 	"encoding/json"
 	"github.com/gorilla/mux"
@@ -119,7 +117,7 @@ func ScanDirHandler(root string, w http.ResponseWriter, r *http.Request) {
 
 	//default behavior is ignore the hidden files
 	excludePattern := []string{"^\\."}
-	query := query.New(r.URL.Query())
+	query := New(r.URL.Query())
 	if value, ok := query.Str("hidden"); ok {
 		// 1 means we want to show the hidden files, so don't set any excludePattern here
 		if value == "1" {
@@ -127,7 +125,7 @@ func ScanDirHandler(root string, w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	infos, err := fileutils.ScanDir(p, excludePattern)
+	infos, err := ScanDir(p, excludePattern)
 	if err != nil {
 		logger.Errorf("scan dir error: %v", err)
 		writeError(w, err, http.StatusNotFound)
