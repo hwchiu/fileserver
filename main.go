@@ -5,9 +5,8 @@ import (
 	"net"
 	"net/http"
 
-	"bitbucket.org/linkernetworks/aurora/src/aurora"
-	fs "bitbucket.org/linkernetworks/aurora/src/fileserver"
-	"bitbucket.org/linkernetworks/aurora/src/logger"
+	"github.com/c9s/gomon/logger"
+	fs "github.com/linkernetworks/fileserver/src"
 
 	"github.com/gorilla/mux"
 )
@@ -38,11 +37,6 @@ func main() {
 	flag.StringVar(&host, "host", "", "hostname")
 	flag.StringVar(&port, "port", "33333", "port")
 	flag.Parse()
-
-	if version {
-		aurora.PrintVersion()
-		return
-	}
 
 	logger.Infof("Serving document root: %s at %s", documentRoot, basePath)
 	router := newRouterServer(documentRoot, basePath)
