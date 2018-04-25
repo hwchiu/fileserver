@@ -10,7 +10,6 @@ import (
 	"os"
 	"testing"
 
-	"bitbucket.org/linkernetworks/aurora/src/utils/fileutils"
 	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/assert"
 )
@@ -70,7 +69,7 @@ func TestScanDir(t *testing.T) {
 	assert.Equal(t, res.Code, 200)
 
 	//Test Files
-	var fi []fileutils.FileInfo
+	var fi []FileInfo
 	err = json.Unmarshal(res.Body.Bytes(), &fi)
 	assert.NoError(t, err)
 
@@ -106,7 +105,7 @@ func TestScanDirWithHidden(t *testing.T) {
 	assert.Equal(t, res.Code, 200)
 
 	//Test Files
-	var fi []fileutils.FileInfo
+	var fi []FileInfo
 	err = json.Unmarshal(res.Body.Bytes(), &fi)
 	assert.NoError(t, err)
 	assert.Equal(t, 3, len(fi))
