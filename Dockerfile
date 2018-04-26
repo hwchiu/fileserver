@@ -7,5 +7,8 @@ COPY src   /go/src/github.com/linkernetworks/fileserver/src
 COPY main.go /go/src/github.com/linkernetworks/fileserver
 COPY vendor /go/src/github.com/linkernetworks/fileserver/vendor
 
+ENV PORT 33333
+ENV ROOT /
+
 RUN go install .
-ENTRYPOINT /go/bin/fileserver -host localhost -port 33333
+ENTRYPOINT /go/bin/fileserver -host localhost -port ${PORT} -documentRoot ${ROOT}
