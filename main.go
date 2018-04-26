@@ -29,9 +29,7 @@ func main() {
 	var port string
 	var documentRoot string
 	var basePath string
-	var version bool = false
 
-	flag.BoolVar(&version, "version", false, "version")
 	flag.StringVar(&documentRoot, "documentRoot", "/workspace", "the document root of the file server")
 	flag.StringVar(&basePath, "basePath", "", "the url base path of the APIs")
 	flag.StringVar(&host, "host", "", "hostname")
