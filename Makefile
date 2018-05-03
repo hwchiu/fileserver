@@ -1,5 +1,8 @@
 SHELL := /bin/bash
 
+GO_VENDOR := $(shell which govendor)
+VENDOR_JSON_FILE := vendor/vendor.json
+
 PUBLIC_DOCKER_REGISTRY = docker.io
 DOCKER_PROJECT = linkernetworks
 
@@ -24,10 +27,18 @@ endif
 
 all: build build-image push-image
 
-build:
+build: vendor/.deps
 	go build .
 clean:
 	@rm -rf fileserver
+
+tool-govendor:
+	if [ "$(GO_VENDOR)" == "" ] ; then go get github.com/kardianos/govendor ; fi
+
+vendor/.deps: tool-govendor $(VENDOR_JSON_FILE)
+	govendor sync
+	touch $@
+
 build-image:
 	time docker build $(DOCKER_BUILD_FLAGS) \
 		--tag $(PUBLIC_DOCKER_REGISTRY)/$(DOCKER_PROJECT)/fileserver:$(IMAGE_TAG) \
