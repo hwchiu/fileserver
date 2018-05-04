@@ -7,6 +7,8 @@ COPY src   /go/src/github.com/hwchiu/fileserver/src
 COPY main.go /go/src/github.com/hwchiu/fileserver
 COPY vendor /go/src/github.com/hwchiu/fileserver/vendor
 
+COPY mime.types /etc/
+
 ENV PORT 33333
 ENV ROOT /
 
