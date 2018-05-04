@@ -1,4 +1,4 @@
-Fileserver [![Build Status](https://travis-ci.org/linkernetworks/fileserver.svg?branch=master)](https://travis-ci.org/linkernetworks/fileserver)
+Fileserver [![Build Status](https://travis-ci.org/hwchiu/fileserver.svg?branch=master)](https://travis-ci.org/hwchiu/fileserver)
 ============
 A simple www server which is written in golang supports the scan/read/write/delete function
 
