@@ -1,4 +1,4 @@
-Fileserver [![Build Status](https://travis-ci.org/hwchiu/fileserver.svg?branch=master)](https://travis-ci.org/hwchiu/fileserver)
+Fileserver [![Build Status](https://travis-ci.org/hwchiu/fileserver.svg?branch=master)](https://travis-ci.org/hwchiu/fileserver) [![codecov](https://codecov.io/gh/hwchiu/fileserver/branch/master/graph/badge.svg)](https://codecov.io/gh/hwchiu/fileserver)
 ============
 A simple www server which is written in golang supports the scan/read/write/delete function
 
