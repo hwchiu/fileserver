@@ -1,9 +1,14 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"net"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"github.com/c9s/gomon/logger"
 	fs "github.com/hwchiu/fileserver/src"
@@ -41,8 +46,19 @@ func main() {
 
 	bind := net.JoinHostPort(host, port)
 	logger.Infof("Listening at %s", bind)
+	server := &http.Server{Addr: bind, Handler: logRequest(router)}
 
-	http.ListenAndServe(bind, logRequest(router))
+	sigC := make(chan os.Signal)
+	signal.Notify(sigC, syscall.SIGTERM)
+	go func() {
+		<-sigC
+		logger.Infof("caught signal SIGTERM, terminating fileserver...")
+		ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+		server.Shutdown(ctx)
+		os.Exit(0)
+	}()
+
+	server.ListenAndServe()
 }
 
 func logRequest(handler http.Handler) http.Handler {
