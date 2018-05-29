@@ -37,7 +37,7 @@ func main() {
 
 	flag.StringVar(&documentRoot, "documentRoot", "/workspace", "the document root of the file server")
 	flag.StringVar(&basePath, "basePath", "", "the url base path of the APIs")
-	flag.StringVar(&host, "host", "", "hostname")
+	flag.StringVar(&host, "host", "localhost", "hostname")
 	flag.StringVar(&port, "port", "33333", "port")
 	flag.Parse()
 
