@@ -50,6 +50,13 @@ func GetScanDirHandler(root string) func(w http.ResponseWriter, r *http.Request)
 		ScanDirHandler(root, w, r)
 	}
 }
+
+func GetDownloadFileHandler(root string) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		DownloadFileHandler(root, w, r)
+	}
+}
+
 func RemoveFileHandler(root string, w http.ResponseWriter, r *http.Request) {
 	values := mux.Vars(r)
 	p := path.Join(root, values["path"])
@@ -141,4 +148,28 @@ func ScanDirHandler(root string, w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	w.Write(response)
+}
+
+func DownloadFileHandler(root string, w http.ResponseWriter, r *http.Request) {
+	values := mux.Vars(r)
+	p := path.Join(root, values["path"])
+
+	outfile, err := os.OpenFile(p, os.O_RDONLY, 0x0444)
+	if nil != err {
+		logger.Errorf("Open file fail: %v", err)
+		writeError(w, err, http.StatusNotFound)
+		return
+	}
+
+	// 32k buffer copy
+	written, err := io.Copy(w, outfile)
+	if nil != err {
+		logger.Errorf("Copy file fail: %v", err)
+		writeError(w, err, http.StatusInternalServerError)
+		return
+	}
+
+	logger.Info("Downlaod file", outfile.Name(), " lenght", written)
+	w.Header().Set("Content-Type", mime.TypeByExtension(path.Ext(p)))
+	w.WriteHeader(http.StatusOK)
 }

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"io/ioutil"
+	"mime"
 	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
@@ -25,6 +26,7 @@ func newRouterServer() http.Handler {
 	router.HandleFunc("/read/{path:.*}", GetReadFileHandler(root)).Methods("GET")
 	router.HandleFunc("/write/{path:.*}", GetWriteFileHandler(root)).Methods("POST")
 	router.HandleFunc("/delete/{path:.*}", GetRemoveFileHandler(root)).Methods("DELETE")
+	router.HandleFunc("/download/{path:.*}", GetDownloadFileHandler(root)).Methods("GET")
 
 	return router
 }
@@ -244,6 +246,35 @@ func TestDeleteFile(t *testing.T) {
 	assert.Equal(t, res.Code, 404)
 }
 
+func TestDownloadFile(t *testing.T) {
+	dirPrefix := "downloadDir"
+	testFileExt := ".txt"
+	testFileName := "readMe"
+	testFileContents := []byte{12, 3, 4, 1, 213, 213, 13}
+	testFile := testFileName + testFileExt
+
+	//Create a file under testdir
+	tmpDir := createTempDir(t, dirPrefix)
+	defer os.RemoveAll(tmpDir)
+	createTempFile(t, tmpDir, testFile, testFileContents)
+
+	pwd, err := os.Getwd()
+	assert.NoError(t, err)
+	//Get the abosolute path for testing dir
+	filePath := pwd + "/" + tmpDir + "/" + testFile
+
+	req, err := http.NewRequest("GET", "/download"+filePath, nil)
+	assert.NoError(t, err)
+
+	res := httptest.NewRecorder()
+	newRouterServer().ServeHTTP(res, req)
+
+	//Test Status Code
+	assert.Equal(t, res.Code, 200)
+	assert.Equal(t, testFileContents, res.Body.Bytes())
+	assert.Equal(t, mime.TypeByExtension(testFileExt), res.Header().Get("Content-Type"))
+}
+
 func TestInvalidPath(t *testing.T) {
 	type testCases struct {
 		Cases  string
@@ -254,6 +285,7 @@ func TestInvalidPath(t *testing.T) {
 	data := []testCases{
 		{"Load", "/scan", "GET"},
 		{"Read", "/read", "GET"},
+		{"Download", "/download", "GET"},
 	}
 
 	for _, v := range data {

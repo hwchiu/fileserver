@@ -26,6 +26,7 @@ func newRouterServer(root string, basepath string) http.Handler {
 	router.HandleFunc("/read/{path:.*}", fs.GetReadFileHandler(root)).Methods("GET")
 	router.HandleFunc("/write/{path:.*}", fs.GetWriteFileHandler(root)).Methods("POST")
 	router.HandleFunc("/delete/{path:.*}", fs.GetRemoveFileHandler(root)).Methods("DELETE")
+	router.HandleFunc("/download/{path:.*}", fs.GetDownloadFileHandler(root)).Methods("GET")
 	return router
 }
 
