@@ -25,3 +25,6 @@ the basic URL usage is `/scan/{path}` and the fileserver will scan all directori
 
 For example 
 `curl -X GET -i http://localhost:33333/scan` will scan the directory /tmp and `curl -X GET -i http://localhost:33333/scan/data` will scan /tmp/data/.
+
+### Download
+Send the HTTP GET to the path `/download/{path}` and the server will return the file (don't support directory)
