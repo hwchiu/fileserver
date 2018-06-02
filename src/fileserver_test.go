@@ -285,6 +285,7 @@ func TestInvalidPath(t *testing.T) {
 	data := []testCases{
 		{"Load", "/scan", "GET"},
 		{"Read", "/read", "GET"},
+		{"Download", "/download", "GET"},
 	}
 
 	for _, v := range data {

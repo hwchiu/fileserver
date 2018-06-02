@@ -156,7 +156,7 @@ func DownloadFileHandler(root string, w http.ResponseWriter, r *http.Request) {
 
 	outfile, err := os.OpenFile(p, os.O_RDONLY, 0x0444)
 	if nil != err {
-		logger.Errorf("Openfile fail: %v", err)
+		logger.Errorf("Open file fail: %v", err)
 		writeError(w, err, http.StatusNotFound)
 		return
 	}
@@ -164,7 +164,7 @@ func DownloadFileHandler(root string, w http.ResponseWriter, r *http.Request) {
 	// 32k buffer copy
 	written, err := io.Copy(w, outfile)
 	if nil != err {
-		logger.Errorf("Openfile fail: %v", err)
+		logger.Errorf("Copy file fail: %v", err)
 		writeError(w, err, http.StatusInternalServerError)
 		return
 	}
